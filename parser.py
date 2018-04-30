@@ -9,31 +9,44 @@ def process_function(node):
 
 
 def process_enum(node):
+  #print(node.type.spelling + " " + node.spelling)
   pass
 
 
 def process_hint(node):
+  #print(node.type.spelling + " " + node.spelling)
   pass
 
 
 def process_structs(node):
+  #print(node.type.spelling + " " + node.spelling)
   pass
 
 
 def walk(node):
-  for i in range(4):
-    if node.spelling in syms[i]:
-      processors[i](node)
+  if node.spelling in func_syms and node.kind.is_declaration():
+    func_syms[node.spelling].append(node.kind)
+    process_function(node)
+  elif node.spelling in enum_syms and node.is_definition():
+    import ipdb; ipdb.set_trace()
+    enum_syms[node.spelling].append(node.kind)
+    process_enum(node)
+  elif node.spelling in hint_syms and node.is_definition():
+    hint_syms[node.spelling].append(node.kind)
+    process_hint(node)
+  elif node.spelling in struct_syms and node.is_definition():
+    struct_syms[node.spelling].append(node.kind)
+    process_structs(node)
   for n in node.get_children():
     walk(n)
 
 
 if __name__ == '__main__':
 
-  func_syms = set(open("symbols/functions.txt").read().split('\n'))
-  enum_syms = set(open("symbols/enums.txt").read().split('\n'))
-  hint_syms = set(open("symbols/hints.txt").read().split('\n'))
-  struct_syms = set(open("symbols/structs.txt").read().split('\n'))
+  func_syms = {k: [] for k in open("symbols/functions.txt").read().split('\n')}
+  enum_syms = {k: [] for k in open("symbols/enums.txt").read().split('\n')}
+  hint_syms = {k: [] for k in open("symbols/hints.txt").read().split('\n')}
+  struct_syms = {k: [] for k in open("symbols/structs.txt").read().split('\n')}
   syms = [func_syms, enum_syms, hint_syms, struct_syms]
   processors = [process_function, process_enum, process_hint, process_structs]
 
